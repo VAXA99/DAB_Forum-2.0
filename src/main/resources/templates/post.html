@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/post.css">
+    <title>Пост</title>
+</head>
+<body>
+
+<div class="post">
+    <div class="post-header">
+        <h2 th:text="${post.title}"></h2>
+        <p th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+        <p th:text="${post.userDto.username}"></p>
+    </div>
+
+    <div class="post-content">
+        <p th:text="${post.content}"></p>
+    </div>
+
+    <div class="post-tags">
+        <p>Тэги: <span th:each="tag : ${post.tagNames}" class="tag" th:text="${tag}"></span></p>
+    </div>
+
+    <div class="post-actions">
+        <form th:action="@{/forum/post/like}" method="get">
+            <input type="hidden" name="postId" th:value="${post.getId()}"/>
+            <input type="hidden" name="isLike" value="true"/>
+            <button type="submit" class="action-icon">👍<span th:text="${post.likeCount}"></span></button>
+        </form>
+        <form th:action="@{/forum/post/like}" method="get">
+            <input type="hidden" name="postId" th:value="${post.getId()}"/>
+            <input type="hidden" name="isLike" value="false"/>
+            <button type="submit" class="action-icon">👎<span th:text="${post.dislikeCount}"></span></button>
+        </form>
+        <form th:action="@{/forum/post/{postId}(postId=${post.getId()})}" method="get">
+            <button type="submit" class="action-icon">💬<span th:text="${post.commentCount}"></span></button>
+        </form>
+    </div>
+
+
+    <!-- Comment input form -->
+    <div class="comment-form">
+        <form th:action="@{'/forum/post/comment'}" method="get">
+            <input type="hidden" name="postId" th:value="${post.getId()}"/>
+            <textarea name="content" rows="3" placeholder="Напишите комментарий..." required></textarea>
+            <button type="submit">Опубликовать комментарий</button>
+        </form>
+    </div>
+
+    <!-- Display existing comments -->
+    <div class="comments">
+        <h3>Комментарии:</h3>
+        <div th:each="comment : ${post.commentDtos}" class="comment">
+            <div class="comment-header">
+                <p th:text="${comment.userDto.username}"></p>
+                <p th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+            </div>
+            <div class="comment-content">
+                <p th:text="${comment.content}"></p>
+            </div>
+            <!-- You can add styles for replies if needed -->
+            <div th:if="${comment.replies}" class="replies">
+                <div th:each="reply : ${comment.replies}" class="comment">
+                    <div class="comment-header">
+                        <p th:text="${reply.userDto.username}"></p>
+                        <p th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                    </div>
+                    <div class="comment-content">
+                        <p th:text="${reply.content}"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+</body>
+</html>

@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class UserDetailsImpl implements UserDetails {
-    private String name;
+    private String username;
     private String password;
     private List<GrantedAuthority> authorities;
 
     public UserDetailsImpl(User user) {
-        name = user.getUsername();
+        username = user.getUsername();
         password = user.getPassword();
         authorities = Arrays.stream(user.getRoles().split(","))
                 .map(SimpleGrantedAuthority::new)
@@ -35,7 +35,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getUsername() {
-        return name;
+        return username;
     }
 
     @Override
