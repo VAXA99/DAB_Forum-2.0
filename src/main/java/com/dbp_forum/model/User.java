@@ -25,8 +25,6 @@ public class User {
 
     private String roles;
 
-    private String information;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 

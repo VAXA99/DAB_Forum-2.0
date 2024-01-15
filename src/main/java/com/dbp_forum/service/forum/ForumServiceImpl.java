@@ -67,6 +67,14 @@ public class ForumServiceImpl implements ForumService {
     }
 
     @Override
+    public PostDto getPostById(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with ID: " + postId));
+
+        return convertToPostDTO(post);
+    }
+
+    @Override
     public List<Tag> getAllAvailableTags() {
         return tagRepository.findAll();
     }
@@ -77,16 +85,19 @@ public class ForumServiceImpl implements ForumService {
                 .orElseThrow(() -> new EntityNotFoundException("Post not found with ID: " + postId));
 
         List<Comment> comments = commentRepository.findCommentByPostIdAndParentCommentIsNull(postId);
-        List<String> tagNames = tagRepository.findTagsByPostId(postId);
-
         PostDto postDto = convertToPostDTO(post);
-
         List<CommentDto> commentDtos = getCommentDtos(comments);
-
-        postDto.setCommentDtos(commentDtos);
-        postDto.setTagNames(tagNames);
+        postDto.setComments(commentDtos);
 
         return postDto;
+    }
+
+    @Override
+    public CommentDto getCommentById(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found with ID: " + commentId));
+
+        return convertToCommentDTO(comment, false);
     }
 
     @Override
@@ -114,7 +125,6 @@ public class ForumServiceImpl implements ForumService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID:" + userId));
 
-        // Find the existing like, if any
         Like existingLike = likeRepository.findByPostIdAndUserId(postId, userId);
 
         if (existingLike != null) {
@@ -137,7 +147,7 @@ public class ForumServiceImpl implements ForumService {
 
     @Override
     @Transactional
-    public Long commentPost(Long postId, Long userId, String content) {
+    public void commentPost(Long postId, Long userId, String content) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found with ID: " + postId));
 
@@ -152,7 +162,6 @@ public class ForumServiceImpl implements ForumService {
 
         commentRepository.save(comment);
 
-        return comment.getId();
     }
 
     @Override
@@ -194,7 +203,7 @@ public class ForumServiceImpl implements ForumService {
 
     @Override
     @Transactional
-    public void writePost(Long userId, String title, String content, List<String> tagNames) {
+    public Long writePost(Long userId, String title, String content, List<String> tagNames) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID:" + userId));
 
@@ -217,6 +226,8 @@ public class ForumServiceImpl implements ForumService {
         post.setTags(tags);
 
         postRepository.save(post);
+
+        return post.getId();
     }
 
     @Override
@@ -262,7 +273,7 @@ public class ForumServiceImpl implements ForumService {
 
         if (post.getUser() != null) {
             UserDto userDto = modelMapper.map(post.getUser(), UserDto.class);
-            postDto.setUserDto(userDto);
+            postDto.setUser(userDto);
         }
         postDto.setLikeCount(postRepository.getLikeCount(post));
         postDto.setDislikeCount(postRepository.getDislikeCount(post));
@@ -275,12 +286,8 @@ public class ForumServiceImpl implements ForumService {
         CommentDto commentDto = modelMapper.map(comment, CommentDto.class);
         if (comment.getUser() != null) {
             UserDto userDto = modelMapper.map(comment.getUser(), UserDto.class);
-            commentDto.setUserDto(userDto);
+            commentDto.setUser(userDto);
         }
-        commentDto.setId(comment.getId());
-        commentDto.setIsEdited(comment.getIsEdited());
-        commentDto.setContent(comment.getContent());
-        commentDto.setCreatedAt(comment.getCreatedAt());
 
         if (includeReplies) {
             List<CommentDto> replyDtos = comment.getReplies().stream()
@@ -296,16 +303,11 @@ public class ForumServiceImpl implements ForumService {
         List<PostDto> postDtos = posts.stream()
                 .map(this::convertToPostDTO)
                 .collect(Collectors.toList());
-        for (PostDto postDto: postDtos) {
-            List<String> tagNames = tagRepository.findTagsByPostId(postDto.getId());
-            postDto.setTagNames(tagNames);
-        }
 
         return postDtos;
     }
 
     private List<CommentDto> getCommentDtos(List<Comment> comments) {
-
         return comments.stream()
                 .map(comment -> convertToCommentDTO(comment, true))
                 .collect(Collectors.toList());

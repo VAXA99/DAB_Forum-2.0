@@ -3,6 +3,7 @@ package com.dbp_forum.repository;
 import com.dbp_forum.model.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -35,7 +36,21 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
                     "WHERE SIZE(c.replies) = (" +
                     "    SELECT MAX(SIZE(cr.replies)) " +
                     "    FROM Comment cr" +
+                    ") " +
+                    "AND c.id = (" +
+                    "    SELECT MIN(cc.id) " +
+                    "    FROM Comment cc " +
+                    "    WHERE SIZE(cc.replies) = (" +
+                    "        SELECT MAX(SIZE(crr.replies)) " +
+                    "        FROM Comment crr" +
+                    "    )" +
                     ")"
     )
     Comment getMostQuotedComment();
+
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId ")
+    Long getTotalComments(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId AND c.parentComment IS NOT NULL")
+    Long getTotalRepliesOnUserComments(@Param("userId")Long userId);
 }

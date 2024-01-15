@@ -3,81 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/post.css">
+    <link rel="stylesheet" href="/style.css">
     <title>Пост</title>
 </head>
 <body>
-
-<div class="post">
-    <div class="post-header">
-        <h2 th:text="${post.title}"></h2>
-        <p th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
-        <p th:text="${post.userDto.username}"></p>
+<header class="header">
+    <div class="header-container">
+        <div class="logo">
+            <a href="/forum?feedType=NEWEST_TO_OLDEST" class="nav-link">DAB FORUM</a>
+        </div>
+        <nav class="nav">
+            <a href="/userProfile" class="nav-link">Профиль</a>
+            <a href="/logout" class="nav-link">Выйти</a>
+        </nav>
     </div>
+</header>
 
-    <div class="post-content">
-        <p th:text="${post.content}"></p>
-    </div>
+<div class="feed">
+    <div class="post">
+        <div class="update-actions" th:if="${post.getUser().getUsername()} == ${username}">
+            <button type="submit" class="update-button">
+                <a style="text-decoration: none" th:href="@{'/forum/post/edit/' + ${post.getId()}}">
+                    ✏️
+                </a>
+            </button>
+            <form th:action="@{/forum/post/delete/{postId}(postId=${post.getId()})}" method="post">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                <button type="submit" class="update-button">
+                    🗑️
+                </button>
+            </form>
+        </div>
 
-    <div class="post-tags">
-        <p>Тэги: <span th:each="tag : ${post.tagNames}" class="tag" th:text="${tag}"></span></p>
-    </div>
+        <div class="post-header">
+            <h2 th:text="${post.title}"></h2>
+            <p style="font-weight: bold" th:if="${post.isEdited}">Изменено</p>
+            <p th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+            <p th:text="${post.getUser.username}"></p>
+        </div>
 
-    <div class="post-actions">
-        <form th:action="@{/forum/post/like}" method="get">
-            <input type="hidden" name="postId" th:value="${post.getId()}"/>
-            <input type="hidden" name="isLike" value="true"/>
-            <button type="submit" class="action-icon">👍<span th:text="${post.likeCount}"></span></button>
-        </form>
-        <form th:action="@{/forum/post/like}" method="get">
-            <input type="hidden" name="postId" th:value="${post.getId()}"/>
-            <input type="hidden" name="isLike" value="false"/>
-            <button type="submit" class="action-icon">👎<span th:text="${post.dislikeCount}"></span></button>
-        </form>
-        <form th:action="@{/forum/post/{postId}(postId=${post.getId()})}" method="get">
-            <button type="submit" class="action-icon">💬<span th:text="${post.commentCount}"></span></button>
-        </form>
-    </div>
+        <div class="post-content">
+            <p th:text="${post.content}"></p>
+        </div>
 
+        <div class="post-tags">
+            <p>Тэги: <span th:each="tag : ${post.tags}" class="tag" th:text="${tag.getDescription()}"></span></p>
+        </div>
 
-    <!-- Comment input form -->
-    <div class="comment-form">
-        <form th:action="@{'/forum/post/comment'}" method="get">
-            <input type="hidden" name="postId" th:value="${post.getId()}"/>
-            <textarea name="content" rows="3" placeholder="Напишите комментарий..." required></textarea>
-            <button type="submit">Опубликовать комментарий</button>
-        </form>
-    </div>
+        <div class="post-actions">
+            <form th:action="@{/forum/post/like}" method="get">
+                <input type="hidden" name="postId" th:value="${post.getId()}"/>
+                <input type="hidden" name="isLike" value="true"/>
+                <button type="submit" class="action-icon">👍<span th:text="${post.likeCount}"></span></button>
+            </form>
+            <form th:action="@{/forum/post/like}" method="get">
+                <input type="hidden" name="postId" th:value="${post.getId()}"/>
+                <input type="hidden" name="isLike" value="false"/>
+                <button type="submit" class="action-icon">👎<span th:text="${post.dislikeCount}"></span></button>
+            </form>
+            <form th:action="@{/forum/post/{postId}(postId=${post.getId()})}" method="get">
+                <button type="submit" class="action-icon">💬<span th:text="${post.commentCount}"></span></button>
+            </form>
+        </div>
 
-    <!-- Display existing comments -->
-    <div class="comments">
-        <h3>Комментарии:</h3>
-        <div th:each="comment : ${post.commentDtos}" class="comment">
-            <div class="comment-header">
-                <p th:text="${comment.userDto.username}"></p>
-                <p th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
-            </div>
-            <div class="comment-content">
-                <p th:text="${comment.content}"></p>
-            </div>
-            <!-- You can add styles for replies if needed -->
-            <div th:if="${comment.replies}" class="replies">
-                <div th:each="reply : ${comment.replies}" class="comment">
-                    <div class="comment-header">
-                        <p th:text="${reply.userDto.username}"></p>
-                        <p th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+        <!-- Comment input form -->
+        <div class="comment-form">
+            <form th:action="@{/forum/post/comment}" method="post">
+                <input type="hidden" name="postId" th:value="${post.getId()}"/>
+                <textarea name="content" rows="3" placeholder="Напишите комментарий..." required></textarea>
+                <button type="submit">Опубликовать комментарий</button>
+            </form>
+        </div>
+
+        <!-- Display existing comments -->
+        <div class="comments">
+            <h3>Комментарии:</h3>
+            <div th:each="comment : ${post.getComments}" class="comment">
+                <div class="update-actions" th:if="${comment.getUser().getUsername()} == ${username}">
+                    <button type="submit" class="update-button">
+                        <a style="text-decoration: none" th:href="@{/forum/post/comment/edit/{commentId} (commentId=${comment.getId()})}">
+                            ✏️
+                        </a>
+                    </button>
+                    <form th:action="@{/forum/{postId}/comment/delete/{commentId} (postId=${post.getId()}, commentId=${comment.getId()})}" method="post">
+                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                        <button type="submit" class="update-button">
+                            🗑️
+                        </button>
+                    </form>
+                </div>
+                <div class="comment-header">
+                    <p th:text="${comment.getUser.username}"></p>
+                    <p th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </div>
+                <div class="comment-content">
+                    <p th:text="${comment.content}"></p>
+                </div>
+                <div th:if="${comment.replies}" class="replies">
+                    <div th:each="reply : ${comment.replies}" class="comment">
+                        <div class="update-actions" th:if="${reply.getUser().getUsername()} == ${username}">
+                            <button type="submit" class="update-button">
+                                <a style="text-decoration: none" th:href="@{/forum/post/comment/edit/{commentId} (commentId=${reply.getId()})}">
+                                    ✏️
+                                </a>
+                            </button>
+                            <form th:action="@{/forum/{postId}/comment/delete/{commentId}(postId=${post.getId()}, commentId=${reply.getId()})}" method="post">
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                                <button type="submit" class="update-button">
+                                    🗑️
+                                </button>
+                            </form>
+                        </div>
+                        <div class="comment-header">
+                            <p th:text="${reply.getUser.username}"></p>
+                            <p th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                        </div>
+                        <div class="comment-content">
+                            <p th:text="${reply.content}"></p>
+                        </div>
                     </div>
-                    <div class="comment-content">
-                        <p th:text="${reply.content}"></p>
+                    <div class="comment-form">
+                        <form th:action="@{/forum/post/reply/{commentId} (commentId=${comment.getId()})}" method="post">
+                            <input type="hidden" name="postId" th:value="${post.getId()}"/>
+                            <textarea name="content" rows="3" placeholder="Напишите комментарий..." required></textarea>
+                            <button type="submit">Опубликовать комментарий</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 </div>
-
-
 
 </body>
 </html>

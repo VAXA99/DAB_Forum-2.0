@@ -1,10 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Статистика</title>
 </head>
 <body>
+<header class="header">
+    <div class="header-container">
+        <div class="logo">
+            <a href="/forum?feedType=NEWEST_TO_OLDEST" class="nav-link">DAB FORUM</a>
+        </div>
+        <nav class="nav">
+            <a href="/userProfile" class="nav-link">Профиль</a>
+            <a href="/logout" class="nav-link">Выйти</a>
+        </nav>
+    </div>
+</header>
+
+<div class="feed">
+    <h1>Самая длинная цепочка комментариев:</h1>
+    <div class="post">
+        <div class="comments">
+            <div class="comment">
+                <div class="comment-header">
+                    <p th:text="${longestCommentChain.getUser.username}"></p>
+                    <p th:text="${#temporals.format(longestCommentChain.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </div>
+                <div class="comment-content">
+                    <p th:text="${longestCommentChain.content}"></p>
+                </div>
+                <!-- You can add styles for replies if needed -->
+                <div th:if="${longestCommentChain.replies}" class="replies">
+                    <div th:each="reply : ${longestCommentChain.replies}" class="comment">
+                        <div class="comment-header">
+                            <p th:text="${reply.getUser.username}"></p>
+                            <p th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                        </div>
+                        <div class="comment-content">
+                            <p th:text="${reply.content}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h1>Самый цитируемый комментарий:</h1>
+    <div class="post">
+        <div class="comments">
+            <div class="comment">
+                <div class="comment-header">
+                    <p th:text="${mostQuotedComment.getUser.username}"></p>
+                    <p th:text="${#temporals.format(mostQuotedComment.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+                </div>
+                <div class="comment-content">
+                    <p th:text="${mostQuotedComment.content}"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h1>Средняя длина цепочек комментариев:</h1>
+    <div class="post">
+        <div th:text="${averageCommentChainLength}"></div>
+    </div>
+</div>
 
 </body>
 </html>

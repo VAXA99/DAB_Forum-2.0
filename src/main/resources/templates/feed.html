@@ -3,44 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/feed.css">
+    <link rel="stylesheet" href="/style.css">
     <title>Лента</title>
 </head>
 <body>
 
-<div th:each="post : ${posts}" class="post">
-    <div class="post-header">
-        <h2 th:text="${post.title}"></h2>
-        <p th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
-        <p th:text="${post.userDto.username}"></p>
+<header class="header">
+    <div class="header-container">
+        <div class="logo">
+            <a href="/forum?feedType=NEWEST_TO_OLDEST" class="nav-link">DAB FORUM</a>
+        </div>
+        <nav class="nav">
+            <a href="/userProfile" class="nav-link">Профиль</a>
+            <a href="/logout" class="nav-link">Выйти</a>
+        </nav>
+    </div>
+</header>
+
+<div class="feed">
+    <form class="tag-form" th:action="@{/forum}" method="get">
+        <div class="tag-selector">
+            <label for="tagCheckbox">Выберите тэги:</label>
+            <div th:each="tag : ${availableTags}">
+                <input type="checkbox" id="tagCheckbox" th:id="'tag_' + ${tag.description}" th:name="'tags'"
+                       th:value="${tag.description}"/>
+                <label th:for="'tag_' + ${tag.description}" th:text="${tag.description}"></label>
+            </div>
+        </div>
+
+        <button class="feed-button" type="submit" onclick="applyFilter()">Применить фильтр</button>
+    </form>
+
+    <div class="feed-buttons">
+        <button class="feed-button" onclick="changeFeed('NEWEST_TO_OLDEST')">Сначала новые</button>
+        <button class="feed-button" onclick="changeFeed('MOST_POPULAR_TO_LEAST')">Сначала популярные</button>
+        <button class="feed-button" onclick="toStatistics()">Статистика</button>
     </div>
 
-    <div class="post-content">
-        <p th:text="${post.content}"></p>
+    <button class="write-icon" onclick="handleWritePost()">✍</button>
+
+    <div th:each="post : ${posts}" class="post">
+        <div class="update-actions" th:if="${post.getUser().getUsername()} == ${username}">
+            <button type="submit" class="update-button">
+                <a style="text-decoration: none" th:href="@{/forum/post/edit/{postId} (postId=${post.getId})}">
+                    ✏️
+                </a>
+            </button>
+            <form th:action="@{/forum/post/delete/{postId} (postId=${post.getId()})}" method="post" id="deleteForm">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                <button type="submit" class="update-button">
+                    🗑️
+                </button>
+            </form>
+        </div>
+
+        <div class="post-header">
+            <h2 th:text="${post.title}"></h2>
+            <p style="font-weight: bold" th:if="${post.isEdited}">Изменено</p>
+            <p th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+            <p th:text="${post.getUser.username}"></p>
+        </div>
+
+        <div class="post-content">
+            <p th:text="${post.content}"></p>
+        </div>
+
+        <div class="post-tags">
+            <p>Тэги: <span th:each="tag : ${post.tags}" class="tag" th:text="${tag.getDescription()}"></span></p>
+        </div>
+
+        <div class="post-actions">
+            <form th:action="@{/forum/post/like}" method="get">
+                <input type="hidden" name="postId" th:value="${post.getId()}"/>
+                <input type="hidden" name="isLike" value="true"/>
+                <button type="submit" class="action-icon">👍<span th:text="${post.likeCount}"></span></button>
+            </form>
+            <form th:action="@{/forum/post/like}" method="get">
+                <input type="hidden" name="postId" th:value="${post.getId()}"/>
+                <input type="hidden" name="isLike" value="false"/>
+                <button type="submit" class="action-icon">👎<span th:text="${post.dislikeCount}"></span></button>
+            </form>
+            <form th:action="@{/forum/post/{postId}(postId=${post.getId()})}" method="get">
+                <button type="submit" class="action-icon">💬<span th:text="${post.commentCount}"></span></button>
+            </form>
+        </div>
     </div>
-
-    <div class="post-tags">
-        <p>Тэги: <span th:each="tag : ${post.tagNames}" class="tag" th:text="${tag}"></span></p>
-    </div>
-
-    <div class="post-actions">
-        <form th:action="@{/forum/post/like}" method="get">
-            <input type="hidden" name="postId" th:value="${post.getId()}"/>
-            <input type="hidden" name="isLike" value="true"/>
-            <button type="submit" class="action-icon">👍<span th:text="${post.likeCount}"></span></button>
-        </form>
-        <form th:action="@{/forum/post/like}" method="get">
-            <input type="hidden" name="postId" th:value="${post.getId()}"/>
-            <input type="hidden" name="isLike" value="false"/>
-            <button type="submit" class="action-icon">👎<span th:text="${post.dislikeCount}"></span></button>
-        </form>
-        <form th:action="@{/forum/post/{postId}(postId=${post.getId()})}" method="get">
-            <button type="submit" class="action-icon">💬<span th:text="${post.commentCount}"></span></button>
-        </form>
-    </div>
-
-
 </div>
+<script>
+    function changeFeed(feedType) {
+        window.location.href = '/forum?feedType=' + feedType;
+    }
 
+    function applyFilter() {
+        var form = document.getElementById('tagForm');
+        var tags = document.getElementsByName('tags');
+        var selectedTags = Array.from(tags).filter(tag => tag.checked).map(tag => tag.value);
+
+        event.preventDefault();
+
+        var url = '/forum?feedType=BY_TAGS&tags=' + selectedTags.join(',');
+        window.location.href = url;
+    }
+
+    function toStatistics() {
+        window.location.href = '/forum/statistics';
+    }
+
+    function handleWritePost() {
+        window.location.href = '/forum/post/write';
+    }
+
+</script>
 </body>
 </html>

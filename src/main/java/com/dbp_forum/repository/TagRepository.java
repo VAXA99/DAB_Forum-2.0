@@ -12,9 +12,5 @@ import java.util.Optional;
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Long> {
     Optional<Tag> findByDescription(String description);
-    @Query(nativeQuery = true, value = "SELECT t.description " +
-            "FROM tag t " +
-            "JOIN post_tags pt ON t.id = pt.tag_id " +
-            "WHERE pt.post_id = :postId")
-    List<String> findTagsByPostId(@Param("postId") Long postId);
+
 }

@@ -1,5 +1,6 @@
 package com.dbp_forum.dto;
 
+import com.dbp_forum.model.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,9 +17,9 @@ public class PostDto {
     private String content;
     private LocalDateTime createdAt;
     private Boolean isEdited;
-    private UserDto userDto;
-    private List<String> tagNames;
-    private List<CommentDto> commentDtos;
+    private UserDto user;
+    private List<Tag> tags;
+    private List<CommentDto> comments;
     private long likeCount;
     private long dislikeCount;
     private long commentCount;

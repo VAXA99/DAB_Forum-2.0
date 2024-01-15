@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import javax.persistence.Tuple;
 import java.util.List;
 
 @Data
@@ -13,10 +13,11 @@ import java.util.List;
 public class UserProfileDto {
     private Long userId;
     private String username;
-    private String information;
-    private PostDto postDto;
-    private List<PostCommentDto> postCommentDto;
+    private PostDto mostPopularPost;
+    private List<PostCommentDto> postComments;
     private long totalPosts;
     private long totalComments;
+    private long totalCommentsOnUserPosts;
+    private long totalRepliesOnComments;
     private long totalLikes;
 }

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Новый пост</title>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-container">
+        <div class="logo">
+            <a href="/forum?feedType=NEWEST_TO_OLDEST" class="nav-link">DAB FORUM</a>
+        </div>
+        <nav class="nav">
+            <a href="/userProfile" class="nav-link">Профиль</a>
+            <a href="/logout" class="nav-link">Выйти</a>
+        </nav>
+    </div>
+</header>
+
+<form th:action="@{/forum/{postId}/comment/edit/{commentId} (postId=${comment.getPost().getId()}, commentId=${comment.getId()})}"  method="post" class="write_post_form">
+    <div class="feed">
+        <div class="post">
+            <div class="comments">
+                <div class="comment">
+                    <div class="comment-content">
+                        <textarea class="title_input" th:field="${comment.content}" name="content" rows="3" placeholder="Содержание" required></textarea>
+                    </div>
+                </div>
+            </div>
+            <button class="feed-button" type="submit">Добавить</button>
+        </div>
+    </div>
+</form>
+
+</body>
+</html>

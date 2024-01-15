@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Новый пост</title>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-container">
+        <div class="logo">
+            <a href="/forum?feedType=NEWEST_TO_OLDEST" class="nav-link">DAB FORUM</a>
+        </div>
+        <nav class="nav">
+            <a href="/userProfile" class="nav-link">Профиль</a>
+            <a href="/logout" class="nav-link">Выйти</a>
+        </nav>
+    </div>
+</header>
+
+<form action="/forum/post/write" method="post" class="write_post_form">
+    <div class="feed">
+        <div class="post">
+            <div class="tag-selector">
+                <label for="tagCheckbox">Выберите тэги:</label>
+                <div th:each="tag : ${availableTags}">
+                    <input type="checkbox" id="tagCheckbox" th:id="'tag_' + ${tag.description}" th:name="'tagNames'"
+                           th:value="${tag.description}"/>
+                    <label th:for="'tag_' + ${tag.description}" th:text="${tag.description}"></label>
+                </div>
+                <label for="customTags">Введите свои тэги (через запятую):</label>
+                <input type="text" id="customTags" name="customTags" placeholder="Тэг1, Тэг2, Тэг3"/>
+            </div>
+            <div class="post-header">
+                <input class="title_input" placeholder="Заголовок" name="title" type="text" required>
+            </div>
+            <div class="post_content">
+                <textarea class="title_input" name="content" rows="3" placeholder="Содержание" required></textarea>
+            </div>
+            <button class="feed-button" type="submit">Добавить</button>
+        </div>
+    </div>
+</form>
+
+</body>
+</html>
